@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A*算法鼠标追踪</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #canvas {
+            border: 2px solid #333;
+            background-color: #fff;
+            cursor: crosshair;
+        }
+        .info-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 800px;
+            max-width: 100%;
+        }
+        .info-item {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .speed-control label {
+            font-weight: bold;
+            color: #555;
+        }
+        .speed-control input[type="range"] {
+            width: 150px;
+        }
+        .speed-value {
+            min-width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>A*算法鼠标位置追踪</h1>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <div class="info-panel">
+        <h3>状态信息</h3>
+        <div class="info-item">
+            <span class="info-label">鼠标位置:</span>
+            <span id="mouse-position">X: --, Y: --</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">追踪点位置:</span>
+            <span id="target-position">X: --, Y: --</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">路径长度:</span>
+            <span id="path-length">--</span>
+        </div>
+        <div class="controls">
+            <button id="regenerate-map">重新生成地图</button>
+            <button id="toggle-animation">暂停/继续追踪</button>
+            <div class="speed-control">
+                <label for="speed-slider">追踪速度:</label>
+                <input type="range" id="speed-slider" min="1" max="10" value="1" step="1">
+                <span class="speed-value" id="speed-value">1</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas和上下文
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 获取信息面板元素
+        const mousePositionEl = document.getElementById('mouse-position');
+        const targetPositionEl = document.getElementById('target-position');
+        const pathLengthEl = document.getElementById('path-length');
+        const regenerateMapBtn = document.getElementById('regenerate-map');
+        const toggleAnimationBtn = document.getElementById('toggle-animation');
+        
+        // 配置参数
+        const TILE_SIZE = 20;
+        const GRID_WIDTH = Math.floor(canvas.width / TILE_SIZE);
+        const GRID_HEIGHT = Math.floor(canvas.height / TILE_SIZE);
+        const OBSTACLE_RATE = 0.3; // 障碍物比例
+        
+        // 状态变量
+        let map = []; // 0:空地, 1:障碍物
+        let startPosition = { x: 0, y: 0 };
+        let mousePosition = { x: 0, y: 0 };
+        let path = [];
+        let isAnimating = true;
+        let lastTimestamp = 0;
+        const ANIMATION_INTERVAL = 16; // 约60fps
+        let movementSpeed = 1; // 移动速度，默认为1
+        let speedMultiplier = 1; // 速度乘数，将1单位速度设为原来的1/9
+        let speedSlider = document.getElementById('speed-slider');
+        let speedValueEl = document.getElementById('speed-value');
+        
+        // 初始化地图
+        function initMap() {
+            map = [];
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                map[y] = [];
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    // 随机生成障碍物
+                    map[y][x] = Math.random() < OBSTACLE_RATE ? 1 : 0;
+                }
+            }
+            
+            // 随机生成起始位置（确保不是障碍物）
+            do {
+                startPosition.x = Math.floor(Math.random() * GRID_WIDTH);
+                startPosition.y = Math.floor(Math.random() * GRID_HEIGHT);
+            } while (map[startPosition.y][startPosition.x] === 1);
+            
+            // 初始鼠标位置设为起始位置
+            mousePosition.x = startPosition.x;
+            mousePosition.y = startPosition.y;
+            
+            // 清空路径
+            path = [];
+        }
+        
+        // 绘制地图
+        function drawMap() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5;
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                }
+            }
+            
+            // 绘制障碍物
+            ctx.fillStyle = '#333';
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    if (map[y][x] === 1) {
+                        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    }
+                }
+            }
+            
+            // 绘制路径
+            if (path.length > 0) {
+                ctx.strokeStyle = '#4CAF50';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(path[0].x * TILE_SIZE + TILE_SIZE / 2, path[0].y * TILE_SIZE + TILE_SIZE / 2);
+                for (let i = 1; i < path.length; i++) {
+                    ctx.lineTo(path[i].x * TILE_SIZE + TILE_SIZE / 2, path[i].y * TILE_SIZE + TILE_SIZE / 2);
+                }
+                ctx.stroke();
+                
+                // 绘制路径上的点
+                ctx.fillStyle = 'rgba(76, 175, 80, 0.5)';
+                for (let i = 0; i < path.length; i++) {
+                    ctx.beginPath();
+                    ctx.arc(path[i].x * TILE_SIZE + TILE_SIZE / 2, path[i].y * TILE_SIZE + TILE_SIZE / 2, TILE_SIZE / 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // 绘制起始点
+            ctx.fillStyle = '#2196F3';
+            ctx.beginPath();
+            ctx.arc(startPosition.x * TILE_SIZE + TILE_SIZE / 2, startPosition.y * TILE_SIZE + TILE_SIZE / 2, TILE_SIZE / 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制鼠标位置
+            ctx.fillStyle = '#FF5722';
+            ctx.beginPath();
+            ctx.arc(mousePosition.x * TILE_SIZE + TILE_SIZE / 2, mousePosition.y * TILE_SIZE + TILE_SIZE / 2, TILE_SIZE / 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 更新信息面板
+            updateInfoPanel();
+        }
+        
+        // 更新信息面板
+        function updateInfoPanel() {
+            mousePositionEl.textContent = `X: ${mousePosition.x}, Y: ${mousePosition.y}`;
+            targetPositionEl.textContent = `X: ${startPosition.x}, Y: ${startPosition.y}`;
+            pathLengthEl.textContent = path.length > 0 ? path.length - 1 : 0;
+        }
+        
+        // A*算法实现
+        function aStar(start, goal) {
+            // 开放列表和关闭列表
+            const openList = [start];
+            const closedList = [];
+            
+            // 存储每个节点的父节点，用于重建路径
+            const cameFrom = {};
+            
+            // 存储gScore和fScore
+            const gScore = {};
+            const fScore = {};
+            
+            // 初始化起点的gScore和fScore
+            gScore[`${start.x},${start.y}`] = 0;
+            fScore[`${start.x},${start.y}`] = heuristic(start, goal);
+            
+            while (openList.length > 0) {
+                // 找到fScore最小的节点
+                let currentIndex = 0;
+                for (let i = 1; i < openList.length; i++) {
+                    if (fScore[`${openList[i].x},${openList[i].y}`] < fScore[`${openList[currentIndex].x},${openList[currentIndex].y}`]) {
+                        currentIndex = i;
+                    }
+                }
+                
+                const current = openList.splice(currentIndex, 1)[0];
+                
+                // 如果到达目标节点，重建并返回路径
+                if (current.x === goal.x && current.y === goal.y) {
+                    return reconstructPath(cameFrom, current);
+                }
+                
+                closedList.push(current);
+                
+                // 获取当前节点的邻居
+                const neighbors = getNeighbors(current);
+                
+                for (const neighbor of neighbors) {
+                    // 如果邻居在关闭列表中，跳过
+                    if (closedList.some(node => node.x === neighbor.x && node.y === neighbor.y)) {
+                        continue;
+                    }
+                    
+                    // 计算从起点经过当前节点到邻居的代价
+                    const tentativeGScore = gScore[`${current.x},${current.y}`] + 1; // 每一步的代价为1
+                    
+                    // 如果邻居不在开放列表中，或者找到更好的路径
+                    const neighborKey = `${neighbor.x},${neighbor.y}`;
+                    if (!openList.some(node => node.x === neighbor.x && node.y === neighbor.y)) {
+                        openList.push(neighbor);
+                    } else if (tentativeGScore >= gScore[neighborKey]) {
+                        continue; // 不是更好的路径
+                    }
+                    
+                    // 记录这是到邻居的最佳路径
+                    cameFrom[neighborKey] = current;
+                    gScore[neighborKey] = tentativeGScore;
+                    fScore[neighborKey] = gScore[neighborKey] + heuristic(neighbor, goal);
+                }
+            }
+            
+            // 没有找到路径
+            return [];
+        }
+        
+        // 启发函数：曼哈顿距离
+        function heuristic(a, b) {
+            return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+        }
+        
+        // 获取节点的邻居
+        function getNeighbors(node) {
+            const neighbors = [];
+            const directions = [
+                { dx: 0, dy: -1 }, // 上
+                { dx: 1, dy: 0 },  // 右
+                { dx: 0, dy: 1 },  // 下
+                { dx: -1, dy: 0 }  // 左
+            ];
+            
+            for (const dir of directions) {
+                const x = node.x + dir.dx;
+                const y = node.y + dir.dy;
+                
+                // 检查是否在地图范围内且不是障碍物
+                if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT && map[y][x] === 0) {
+                    neighbors.push({ x, y });
+                }
+            }
+            
+            return neighbors;
+        }
+        
+        // 重建路径
+        function reconstructPath(cameFrom, current) {
+            const path = [current];
+            let currentKey = `${current.x},${current.y}`;
+            
+            while (cameFrom[currentKey]) {
+                current = cameFrom[currentKey];
+                path.unshift(current);
+                currentKey = `${current.x},${current.y}`;
+            }
+            
+            return path;
+        }
+        
+        // 动画循环
+        function animate(timestamp) {
+            // 控制动画帧率
+            if (timestamp - lastTimestamp < ANIMATION_INTERVAL) {
+                requestAnimationFrame(animate);
+                return;
+            }
+            lastTimestamp = timestamp;
+            
+            if (isAnimating) {
+                // 计算从起始点到鼠标位置的路径
+                path = aStar(startPosition, mousePosition);
+                
+                // 根据速度移动起始点向鼠标位置靠近
+                if (path.length > 1) {
+                    // 计算实际应该移动的步数，将1单位速度设为原来的1/3
+                    // 使用Math.max确保至少移动1步，除非距离太近
+                    const actualSpeed = Math.max(1, Math.floor(movementSpeed * speedMultiplier));
+                    const stepsToMove = Math.min(actualSpeed, path.length - 1);
+                    startPosition.x = path[stepsToMove].x;
+                    startPosition.y = path[stepsToMove].y;
+                }
+            }
+            
+            // 绘制场景
+            drawMap();
+            
+            // 继续动画循环
+            requestAnimationFrame(animate);
+        }
+        
+        // 鼠标移动事件处理
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / TILE_SIZE);
+            const y = Math.floor((e.clientY - rect.top) / TILE_SIZE);
+            
+            // 确保鼠标位置在地图范围内且不是障碍物
+            if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT && map[y][x] === 0) {
+                mousePosition.x = x;
+                mousePosition.y = y;
+            }
+        });
+        
+        // 重新生成地图按钮事件
+        regenerateMapBtn.addEventListener('click', () => {
+            initMap();
+            drawMap();
+        });
+        
+        // 暂停/继续追踪按钮事件
+        toggleAnimationBtn.addEventListener('click', () => {
+            isAnimating = !isAnimating;
+            toggleAnimationBtn.textContent = isAnimating ? '暂停追踪' : '继续追踪';
+        });
+        
+        // 速度滑块事件
+        speedSlider.addEventListener('input', () => {
+            movementSpeed = parseInt(speedSlider.value);
+            speedValueEl.textContent = movementSpeed;
+        });
+        
+        // 初始化并启动应用
+        initMap();
+        drawMap();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
