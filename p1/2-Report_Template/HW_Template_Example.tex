@@ -49,6 +49,12 @@
 }
 
 \definecolor{mygrey}{gray}{.96} % Light Grey
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{myblue}{rgb}{0.13,0.13,1}
+
+% 默认的C++配置
 \lstset{
 	language=[ISO]C++,              % choose the language of the code ("language=Verilog" is popular as well)
    tabsize=3,							  % sets the size of the tabs in spaces (1 Tab is replaced with 3 spaces)
@@ -70,6 +76,37 @@
 	commentstyle=\color{BrickRed}   % sets the comment style
 }
 
+% 专门为Python优化的配置
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    basicstyle=\small\ttfamily,
+    backgroundcolor=\color{mygrey},
+    commentstyle=\color{mygreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{mygray},
+    stringstyle=\color{mymauve},
+    identifierstyle=\color{black},
+    showstringspaces=false,
+    numbers=left,
+    numbersep=8pt,
+    stepnumber=1,
+    frame=single,
+    rulecolor=\color{black},
+    breaklines=true,
+    breakatwhitespace=true,
+    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+    tabsize=4,
+    captionpos=b,
+    morekeywords={self, True, False, None, as, with, yield, async, await},
+    deletekeywords={format},
+    sensitive=true,
+    morecomment=[l]{\#},
+    morestring=[b]',
+    morestring=[b]",
+    morestring=[s]{'''}{'''},
+    morestring=[s]{"""}{"""},
+}
+
 % Make units a little nicer looking and faster to type
 \newcommand{\Hz}{\textsl{Hz}}
 \newcommand{\KHz}{\textsl{KHz}}
@@ -87,8 +124,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\labno}{05}
 \newcommand{\labtitle}{AI 3603 Artificial Intelligence: Principles and Techniques}
-\newcommand{\authorname}{Student name (ID)}
-\newcommand{\hw}{0}
+\newcommand{\authorname}{Chen Jingtao \left(523030910028\right)}
+\newcommand{\hw}{1}
 % END TITLE PAGE CONTENT %%%%%%%%%%%%%%%%%%%%
 
 
@@ -120,71 +157,71 @@ HW\#: \hw \\ \vspace{10pt}
 \section{Introduction}
 %No Text Here
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Purpose}
-\begin{comment}
-This is a lab template which has a ton of different things which are useful in writing lab write-ups in the Computer Eningeering field.  This is demonstrating the comment block. Don't be overwhelmed, it may seem like a lot to take in at a time, but it's worth spending the time learning it.
-\end{comment}
-The goal of today’s lab is to re-design the LED/Switch system (delivered to students in the LEDTest1 programs) to include a hardware timer.  This lab will entail updating the software to be able to configure the timer unit and respond to timer interrupts.  Instead of using a delay loop for the timing of the LED’s, students need to configure a timer unit on the BF533 to provide accurate timing.  When the timer times out, the timer should generate an interrupt and the software should respond to that interrupt by blinking the LED’s. \vspace{3mm} % I use this to seperate the paragraphs a bit.
 
-In this lab, students will use a round-robin with interrupt software architecture using the \texttt{LEDTest1.c} example program as the basis for the design.  The software needs to do 4 main functions.  First the SW needs to be able to initialize the peripheral units (timer and programmable flags).  Second the SW needs to be able to respond to button.  Third the SW needs to be able to respond to timer interrupts.  And fourth, the SW needs to be able to control the LED’s per the buttons and the timer interrupt.
-From an architectural standpoint, the SW can be broken into 4 main sections:
+This Lab aims to design an algorithm to guide from the start point to the target point avoiding obstacles based on the A* algorithm. The algorithm should be implemented in Python language. And it's required to generate a smooth trajectory based on the path found by the A* algorithm using cubic spline interpolation.\vspace{3mm}
+
+The Lab is divided into three steps:\vspace{3mm}
+
 \begin{itemize}
-	\item LED Control -- functions to control the LED's
-	\item Interrupt -- ISR
-	\item Timer Control -- functions to control the timer units
-	\item Main Loop
+	\item Implement basic A* algorithm to find a path from start to target avoiding obstacles
+	\item Optimize the A* algorithm to achieve a better path
+	\item Generate a smooth path based on the path found by the A* algorithm 
 \end{itemize}
 \vspace{3mm}
 
-Students will need one timer interrupt.  In this interrupt, they should set a flag indicating that the ISR was asserted.
-The main control SW needs to be able to do 2 things.  First it needs to initialize the timer unit, the programmable flags and the interrupt.  Next it needs to read the button press, the flags updated by the ISR’s, and output the correct LED’s.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Equipment}
-There is a minimal amount of equipment to be used in this lab.  The few requirements are listed below:
-	\begin{itemize}
-		\item Xilinx ISE Navigator Software (v10.0.1)
-		\item Computer capable of running the software mentioned
-		\item Spartan 3E FPGA Developer Board (For Hardware Simulation)
-	\end{itemize}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Procedure}
-
-	\begin{enumerate}
-		\item Start the ISE Navigator. See the ISE 8.2i Quick Start Tutorial.
-		\item Create a new project.
-		\item Import copies of the Verilog modules AND\_OR, MY\_AND2, and MY\_OR2 to the new project just created.
-		\item Create a Test Bench (called Test Fixture in Verilog).
-		\item Create the actual input stimulus.
-		\item Run the simulation, examine the waveforms, and verify functioniality.
-	\end{enumerate}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
-\section{Schematic Diagrams}
-This section consists of screenshots taken during the laboratory procedure.  One set of the screenshots is of the periods captured by the oscilliscope and the other set is captured by the logic analyzer.
+\section{Tasks}
 
+\subsection{Task 1: Implement basic A* algorithm to find a path from start to target avoiding obstacles}
+
+The first task is to implement the basic A* algorithm to find a path from start to target avoiding obstacles. The A* algorithm is a popular pathfinding and graph traversal algorithm that is used in many applications, including games and robotics. The algorithm uses a heuristic function to estimate the cost of reaching the target from the current node, and it combines this with the cost of reaching the current node from the start node to determine the total cost of each node. The algorithm then explores the nodes with the lowest total cost first, until it reaches the target node.\vspace{3mm}
+
+As for the search strategy we pick up BFS (Breadth-First Search) to implement the A* algorithm. \vspace{3mm}
+
+The heuristiuc function we choose is the Euclidean distance between the current node and the target node. And the cost of reaching the current node from the start node is simply the number of steps taken to reach that node.
+
+\begin{itemize}
+	\item $f\left(x\right) = g\left(x\right) + h\left(x\right)$
+	\item $g\left(x\right) = $ cost from start to current node
+	\item $h\left(x\right) = $ Euclidean distance from current node to target
+\end{itemize}
 	% You can refer to this set of images by using \ref{fig:oscil}.  ie "please refer to Figure \ref{fig:oscil}."
 	% You can refer to a specific subimage by using \ref{fig:Per6A}. ie "please refer to Figure \ref{fig:Per6A}."
    % I prefer the quality of a .png image, but you may use other extensions such as .jpg.
-	\begin{figure}[H]
-	  \centering
-	  \subfloat[LED4 Period]{\label{fig:Per6A}\includegraphics[width=0.4\textwidth]{period_led4.png}} \\
-	  \subfloat[LED5 Period]{\label{fig:Per6A}\includegraphics[width=0.4\textwidth]{period_led5.png}}
-	  \subfloat[LED6 Period]{\label{fig:Per6A}\includegraphics[width=0.4\textwidth]{period_led6.png}}
-	  \caption{Period of LED blink rate captured by osciliscope.}
-	  \label{fig:oscil}
-	\end{figure}
+	% \begin{figure}[H]
+	%   \centering
+	%   \subfloat[LED4 Period]{\label{fig:Per6A}\includegraphics[width=0.4\textwidth]{period_led4.png}} \\
+	%   \subfloat[LED5 Period]{\label{fig:Per6A}\includegraphics[width=0.4\textwidth]{period_led5.png}}
+	%   \subfloat[LED6 Period]{\label{fig:Per6A}\includegraphics[width=0.4\textwidth]{period_led6.png}}
+	%   \caption{Period of LED blink rate captured by osciliscope.}
+	%   \label{fig:oscil}
+	% \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
-\section{Experiment Data}
-This section will consist of the important code blocks which were changed in order to meet the requirements of the lab.  \vspace{5mm}
-	\lstinputlisting{code.c}
-	\vspace{3mm}
+
+The code implementation is as follow:\vspace{5mm}
+
+\lstinputlisting[style=pythonstyle]{5-Task_1.py}
+\vspace{3mm}
+
+In the front of the code we implement the Queue and its descendant PriorityQueue to support the A* algorithm. Then we implement the AStarPlanner function to encapsulate the A* algorithm. The code here are reused from another project I did before.
+\vspace{3mm}
+
+The main function is the plan function which takes in the start and target positions and returns the path found by the algorithm. The function uses a priority queue to explore the nodes with the lowest total cost first, and it keeps track of the visited nodes to avoid cycles using a dictionary bestg. 
+
+\vspace{3mm}
+
+Finally we get a path as the graph shown below:
+
+\vspace{3mm}
+
+\begin{figure}[H]
+   \begin{center}
+	  \includegraphics[width=0.6\textwidth]{5-Task1-Path.png}
+   \end{center}
+\end{figure}
 
 % IF YOU'D RATHER TYPE THE CODE, OR HAVE A SMALLER BLOCK OF CODE, USE THIS:
 %\begin{lstlisting}
@@ -196,152 +233,139 @@ This section will consist of the important code blocks which were changed in ord
 
 %% THIS IS FROM A DIFFERENT CLASS, BUT DEMONSTRATES MATH MODE WELL
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Formulas and Overall Descriptions Used}
-This part of the laboratory was done for \href{http://www.byui.edu/catalog/2004-2005/class.asp1075.htm}{Feedback Control}.  Most of this laboratory's calculations were completed and compiled by the folks at Quanser (the manufacturer of the inverted pendulum) and will give the lab a good starting place.  Below are the state equation and gain values used initially in the lab:
-	\[
-	\begin{bmatrix}
-	\dot{\alpha} \\
-	\ddot{\alpha} \\
-	\dot{\theta} \\
-	\ddot{\theta} \\
-	\end{bmatrix}
-	=
-	\begin{bmatrix}
-	0 & 1 & 0 & 0 \\
-	81.7 & 0 & 0 & -13.9 \\
-	0 & 0 & 0 & 1 \\
-	39.7 & 0 & 0 & -14.4 \\
-	\end{bmatrix}
-	\begin{bmatrix}
-	\alpha \\
-	\dot{\alpha} \\
-	\theta \\
-	\dot{\theta} \\
-	\end{bmatrix}
-	+
-	\begin{bmatrix}
-	0 \\
-	24.5 \\
-	0 \\
-	25.4 \\
-	\end{bmatrix}
-	V
-	\]
+\subsection{Task 2: Optimize the A* algorithm to achieve a better path}
 
-	\[
-	K  =
-	\begin{bmatrix}
-	21 & 2.8 & -2.2 & -2.0 \\
-	\end{bmatrix}
-	\]
+Basing on Task-1, the assignment require to optimize our path according to following three rules:
 
-Other values, such as the $\frac{\mbox{Volts}}{\mbox{Degree}}$ and $\frac{\mbox{Degrees}}{\mbox{Volt}}$ were obtained by first determining the max angle of the pendulum on both extreme sides.
+\vspace{3mm}
 
-Using the max angles from above, these values were determined:
-	\[
-	\begin{array}{l l}
-		\alpha = 0.062 \frac{\mbox{Volts}}{\mbox{Degree}} \\ \\
-		\alpha = 15.105 \frac{\mbox{Degrees}}{\mbox{Volt}} \\
-	\end{array}
-	\]
+\begin{itemize}
+	\item Be able to turn in 8 directions (N, NE, E, SE, S, SW, W, NW)
+	\item Consider the distance between the current node and the wall
+	\item Consider the cost of steering
+\end{itemize}
 
-I would also like to add that in order to calibrate $\alpha$ to get a perfect vertical $= 0$, a value of $0.09$ needed to be added.  The same applies to $\theta$ where $0.322$ needs to be added.
+Our algorithm framework is similar to Task-1, and we make some modifications to the searching-part and the heuristic function.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{DC Motor Transfer Function and Parameters}
+\vspace{3mm}
 
-Definitions:
-	\begin{align*}
-		\theta(t) =  Angular Position \\
-		\dot{\theta}(t) =  Angular Velocity \\
-		\triangle t = t_{10\%} - t_{90\%} \\
-		90\% = e^{-t_{10\%}/\tau} \\
-		10\% = e^{-t_{90\%}/\tau} \\
-	\end{align*}
+\lstinputlisting[style=pythonstyle]{6-Task_2.py}
 
-The Math:
-	\begin{align*}
-		\frac{s\theta(s)}{V_{a}(s)} = \frac{K}{s+P} \\
-		\mbox{Let}\ V_{a}(s) = \frac{V_{0}}{s} \\  % If you'd like to have a space following any command, add "\" to the end as shown here.
-		s\theta(s) = \frac{KV_{0}}{(S+P)S} = \frac{KV_{0}}{\frac{P}{S}} - \frac{\frac{KV_{0}}{P}}{s+P} \\
-		L^{-1} \Rightarrow \dot{\theta}(t) = \frac{KV_{0}}{P}(1-e^{-t/(1/P)}) \\
-		\dot{\theta}(t) = (\dot{\theta}_{i} - \dot{\theta}_{f})e^{-pt} + \dot{\theta}_{f} \\
-	\end{align*}
+\vspace{3mm}
 
-Final equations:
-	\begin{align}
-		\label{thetadot}\dot{\theta}_{f} = \frac{KV_{0}}{P} \\
-		\label{equ:tau}\frac{1}{P} = \tau = \frac{\triangle t}{ln(9)}
-	\end{align}
+When generating the $(dx, dy)$ pairs, we consider 8 directions instead of 4 directions in Task-1.
 
-Graphically (Refer to Equation \ref{thetadot} and Equation \ref{equ:tau}) :
-	% Drawn and exported to png using Inkscape.
-	\begin{figure}[h]
-		\begin{center}
-			\includegraphics[width=0.33\textwidth]{graph.png}
-		\end{center}
-	\label{graph}
-	\end{figure}
+\vspace{3mm}
 
-% AGAIN, ANOTHER EXAMPLE FROM A DIFFERENT CLASS WHICH DEMONSTRasdATES KMAPS AND TABLES NICELY.
-\newpage % I added this after viewing the completed pdf and decided to make this cosmetic change
-This section consists of tables and reductions which were used in this laboratory exercise.
+When calculating the heruistic function, we add two more factors: The shortest distance between the cureent node and the wall, and the cost of steering.
 
-% This table was generated using the Calc2LaTeX macro which I mentioned earlier.
-% You'll need OpenOffice installed and you'll have to download the macro online.
-% If you're interested, I have a guide on how to set this up and use it on my
-% blog.  http://www.derekhildreth.com/blog  Search for "LaTeX".  You'll find it.
-	\begin{table}[htbp]
-	\begin{center}
-		\begin{tabular}{|ccc|cc|}
-			\hline
-			\textbf{PS} & \textbf{D} & \textbf{N} & \textbf{NS} & \textbf{P} \\ \hline
-			\$0.00 & 0 & 0 & \$0.00 & 0 \\
-			 & 0 & 1 & \$0.05 & 0 \\
-			 & 1 & 0 & \$0.10 & 0 \\
-			 & 1 & 1 & -- & -- \\ \hline
-			\$0.05 & 0 & 0 & \$0.05 & 0 \\
-			 & 0 & 1 & \$0.10 & 0 \\
-			 & 1 & 0 & \$0.15 & 0 \\
-			 & 1 & 1 & -- & -- \\ \hline
-			\$0.10 & 0 & 0 & \$0.10 & 0 \\
-			 & 0 & 1 & \$0.15 & 0 \\
-			 & 1 & 0 & \$0.15 & 0 \\
-			 & 1 & 1 & -- & -- \\ \hline
-			\$0.15 & -- & -- & \$0.15 & 1 \\ \hline
-			\end{tabular}
-	\end{center}
-	\caption{Symbolic Transition Table}
-	\label{symbolic}
-	\end{table}
+\vspace{3mm}
 
-	\begin{table}[H]
-		\centering
-		\subfloat[D1 = $Q_{1}$+D+$Q_{0}$N] % Caption
-			{
-				\karnaughmap{4}{D1:}{ {$Q_{1}$} {$Q_{0}$} {D} {N} }{001X011X111X111X}{}  % See the included kvdoc.pdf file for more details
-			} \hspace{10mm} % seperate them a bit
-		\subfloat[D0 = $\Bar{Q_{0}}$N + $Q_{0}\Bar{N}$ + $Q_{1}$N + $Q_{1}$D] % Caption
-			{
-				\karnaughmap{4}{D0:}{ {$Q_{1}$} {$Q_{0}$} {D} {N} }{010X101X011X111X}{}
-			}
-	  \caption{Karnaugh maps and the simplified results of the logic.}
-	  \label{fig:kmaps}
-	\end{table}
+The shortest distance between the current node and the wall is calculated in a new function. It will be a negative value to the h-function since we want our robot to stay away from the wall.
 
+\vspace{3mm}
+
+The cost of steering is calculated only if our current direction is different from the last direction. To implement this, we judge if we are changing direction and pass it to our h-function in the searching-part.
+
+\vspace{3mm}
+
+At last we assign a proper weight to each factor in the h-function to get a better path.
+
+\vspace{3mm}
+
+\begin{gather}
+	h\left(x\right) = \text{EuclideanDistance} - 3 \cdot \text{DistanceToWall} + 10 \cdot \text{SteeringCost} \\
+	\text{SteeringCost} = \begin{cases}
+		1, & \text{if changing direction} \\
+		0, & \text{otherwise}
+	\end{cases}
+\end{gather}
+
+\vspace{3mm}
+
+And here is the result path that:
+
+\vspace{3mm}
+
+\begin{figure}[H]
+   \begin{center}
+	  \includegraphics[width=0.6\textwidth]{6-Task2-Path.png}
+   \end{center}
+\end{figure}
+
+Additionally, we compare our A-star algorithm in Task-1 and Task-2. For example, we calculate the time consumption of both Task-1 and Task-2. The result is as follow:
+
+\begin{itemize}
+	\item Time consumption of Task-1: 0.231 s
+	\item Time consumption of Task-2: 0.732 s
+\end{itemize}
+
+Task-2 apparently cost more time than Task-1, which is reasonable since we add more factors in the heuristic function and expand our searching directions, so our searching queue is larger than before.
+
+\vspace{3mm}
+
+And practically, the path in Task-2 is better than Task-1, since it avoids obstacles better. If we follow the path we found in Task-1, which is too close to the wall, our robot may collide with the wall due to some errors in movement. In Task-2, we consider the distance to the wall, so our robot can avoid obstacles better. Besides, we move towards eight directions instead of four, which gives us more flexibility in navigating the environment.
+
+\vspace{3mm}
+
+So in all, though Task-2 costs more time, it gives us a better path to avoid obstacles.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
-\section{Discussion \& Conclusion}
-The goal of this lab was to re-design the LED/Switch system to include a hardware timer.  By pressing eight different combinations of the three buttons, the LEDs on the board were to act in different ways using these timers. There was not a Q\&A requirement for this lab. \vspace{3mm} % I use this to seperate the paragraphs a bit.
+\subsection{Task 3: Generate a smooth path based on the path found by the A* algorithm}
 
-I was able to accomplish the requirements of the lab by utilizing the \texttt{IntMgrTimerExample.c} project found within the analog devices example programs folder (and mentioned in the class lecture).  There were some stumbling blocks to overcome.  The most difficult for myself was actually getting the period of the LEDs just right.  I was able to get it very close to the 333.3\ms, 666.7\ms, and 1\s periods, but not exactly.  My first method of getting these periods right was to take the clock speed in \MHz, find the period by taking the inverse of the clock speed, and then solving for the value in hex that was needed to get the right period.  This didn't yeild very accurate results at all, and so I then went through a trial and error session until I got a value of 1.1\ms.  I used this value in hex to calculate the other periods.  The results of this method can be seen in Figure \ref{fig:oscil} above in the schematics section. \vspace{3mm}
+To generate a smooth path, the assignment offer me three methods, and I choose to dig into the Polynomial Interpolation, not of any reasons, only because it seems most easy, lol.
 
-Another observation I would like to point out is that I put all of my logic within the interrupts themselves.  I feel that this was a hacked way of doing the lab to save time and that it's probably not the best programming method.  After I was completed with my lab, I viewed other students solutions and they just seemed more elegant.  Interestingly enough, the other students weren't incredibly happy with their solution either.  If I were to go back and do this lab again, I would invest more time in both understanding how to utilze the interrupts as well as find a more elegant solution to blink the lights. \vspace{3mm}
+\vspace{3mm}
 
-All in all, this laboratory gave me an insight on how interrupts work and I hope to be able to apply them to following labs\ldots
+My strategy is brutely simple:
 
+\begin{itemize}
+	\item First, use our optimized A* algorithm in Task-2 to find the initial path
+	\item Then, simplify the path by only recording the steering nodes.
+	\item Finally, we use cubic spline to link every two neighbor nodes to form an overall smooth path, and sampling nodes equidistantly on the smooth path to plot our final path.(Here sampling 100 nodes)
+\end{itemize}
+
+To achieve the cubic spline interpolation, I use the CubicSpline function in the scipy.interpolate library.
+
+The code implementation is as follow:
+
+\vspace{5mm}
+
+\lstinputlisting[style=pythonstyle]{7-Task_3.py}
+
+\vspace{3mm}
+
+The result we get is quite satisfying:
+
+\begin{figure}[H]
+   \begin{center}
+	  \includegraphics[width=0.6\textwidth]{7-Task3-Path.png}
+   \end{center}
+\end{figure}
+
+\vspace{3mm}
+
+It is more similar to the real-world robot path-planning, and it avoids sudden turns, which is better for the robot's movement.
+
+\section{Conclusion}
+
+In this report, we have explored the implementation of an optimized A* algorithm for robot path planning. We compared the performance of the algorithm in two different tasks, highlighting the improvements made in Task-2 by considering additional factors in the heuristic function and expanding the search directions. Although Task-2 required more computational time, it resulted in a more effective path that better avoided obstacles.
+
+\vspace{3mm}
+
+Furthermore, we applied cubic spline interpolation to smooth the path generated by the A* algorithm in Task-2. The resulting smooth path demonstrated improved characteristics for real-world robot navigation, minimizing sudden turns and enhancing overall movement efficiency.
+
+\vspace{3mm}
+
+In conclusion, the enhancements made in the A* algorithm and the subsequent path smoothing techniques have significantly contributed to the development of a more robust and effective robot path-planning solution.
+
+\vspace{3mm}
+
+And from this lab, I have gained a deeper understanding of path-planning algorithms and their practical applications in robotics. The experience has been invaluable in enhancing my skills in algorithm design and implementation.
+
+\vspace{3mm}
+
+Thanks for your patience in reading my lab report!
 
 \end{document} % DONE WITH DOCUMENT!
 
@@ -402,8 +426,19 @@ begin{figure}[H]
 \end{figure}
 
 % INSERT SOURCE CODE
+% For C++ code (default style)
 \lstset{language=Verilog, tabsize=3, backgroundcolor=\color{mygrey}, basicstyle=\small, commentstyle=\color{BrickRed}}
 \lstinputlisting{MODULE.v}
+
+% For Python code (beautiful style)
+\lstinputlisting[style=pythonstyle]{your_python_file.py}
+
+% Or for inline Python code
+\begin{lstlisting}[style=pythonstyle]
+def hello_world():
+    print("Hello, World!")
+    return True
+\end{lstlisting}
 
 % TEXT TABLE
 \begin{table}

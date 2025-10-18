@@ -4,8 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import heapq
-import numpy as np
-from scipy.interpolate import CubicSpline
 MAP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '3-map/map.npy')
 
 
@@ -70,110 +68,13 @@ class PriorityQueue:
         else:
             self.push(item, priority)
 
-def Distance_to_Wall(world_map, position):
-    x, y = position
-    d = 1000.0
-    dist = 1
-    while True:
-        for dx in [-dist, 0, dist]:
-            for dy in [-dist, 0, dist]:
-                if dx * dx + dy * dy <= dist * dist:
-                    nx, ny = x + dx, y + dy
-                    if 0 <= nx < 120 and 0 <= ny < 120:
-                        if world_map[nx][ny] == 1:
-                            d = min(d, (dx * dx + dy * dy) ** 0.5)
-        if d != 1000:
-            return d
-        dist += 1
-
-def heuristic(world_map, pos, goal_pos, if_turn=0):
-    return abs(pos[0] - goal_pos[0]) + abs(pos[1] - goal_pos[1]) - 3 * Distance_to_Wall(world_map, pos) + 10 * if_turn
-
-def Improved_A_star(world_map, start_pos, goal_pos):
-    """
-    Given map of the world, start position of the robot and the position of the goal, 
-    plan a path from start position to the goal using A* algorithm.
-
-    Arguments:
-    world_map -- A 120*120 array indicating current map, where 0 indicating traversable and 1 indicating obstacles.
-    start_pos -- A 2D vector indicating the current position of the robot.
-    goal_pos -- A 2D vector indicating the position of the goal.
-
-    Return:
-    path -- A N*2 array representing the planned path by A* algorithm.
-    """
-
-    fringe = PriorityQueue()
-
-    fringe.push([start_pos,[start_pos], 0], 0 + heuristic(world_map, start_pos, goal_pos))
-
-    best_g = dict()
-
-    best_g[tuple(start_pos)] = 0
-
-    while not fringe.isEmpty():
-        state, path, cost = fringe.pop()
-        if state == goal_pos:
-            return path
-        dx_prev = 2
-        dy_prev = 2
-        if len(path) >= 2:
-            dx_prev = state[0] - path[-2][0]
-            dy_prev = state[1] - path[-2][1]
-        # Get successors
-        for dx, dy in [(-1,0),(1,0),(0,-1),(0,1),(1,1),(1,-1),(-1,1),(-1,-1)]:
-            successor = [state[0]+dx, state[1]+dy]
-            if (dx == dx_prev and dy == dy_prev):
-                if_turn = 0
-            else:
-                if_turn = 1
-            if 0 <= successor[0] < 120 and 0 <= successor[1] < 120 and world_map[successor[0]][successor[1]] == 0:
-                stepCost = 1.4 if abs(dx) + abs(dy) == 2 else 1
-                new_cost = cost + stepCost
-                if tuple(successor) not in best_g or new_cost < best_g[tuple(successor)]:
-                    best_g[tuple(successor)] = new_cost
-                    f_cost = new_cost + heuristic(world_map, successor, goal_pos, if_turn)
-                    fringe.push([successor, path + [successor], new_cost], f_cost)
-    
-    raise Exception("No path found")
-
-def simplify_path(world_map, path):
-    simplified_path = [path[0]]
-    current_direction = (path[1][0] - path[0][0], path[1][1] - path[0][1])
-
-    for i in range(2, len(path)):
-        prev_node = path[i - 1]
-        current_node = path[i]
-        direction = (current_node[0] - prev_node[0], current_node[1] - prev_node[1])
-
-        if direction != current_direction:
-            simplified_path.append(current_node)
-            current_direction = direction
-
-    return simplified_path
-
-def generate_smooth_trajectory(waypoints, num_samples=100):
-    waypoints = np.array(waypoints)
-    
-    # 计算累积弧长作为参数
-    distances = np.cumsum([0] + [np.linalg.norm(waypoints[i+1] - waypoints[i]) 
-                                for i in range(len(waypoints)-1)])
-    
-    # 三次样条插值
-    cs_x = CubicSpline(distances, waypoints[:, 0])
-    cs_y = CubicSpline(distances, waypoints[:, 1])
-    
-    # 等间距采样
-    s_new = np.linspace(0, distances[-1], num_samples)
-    x_smooth = cs_x(s_new)
-    y_smooth = cs_y(s_new)
-    
-    return list(zip(x_smooth, y_smooth))
+def heuristic(pos, goal_pos):
+    return abs(pos[0] - goal_pos[0]) + abs(pos[1] - goal_pos[1])
 
 ###  END CODE HERE  ###
 
 
-def Self_driving_path_planner(world_map, start_pos, goal_pos):
+def A_star(world_map, start_pos, goal_pos):
     """
     Given map of the world, start position of the robot and the position of the goal, 
     plan a path from start position to the goal using A* algorithm.
@@ -189,16 +90,36 @@ def Self_driving_path_planner(world_map, start_pos, goal_pos):
 
     ### START CODE HERE ###
 
-    # A-star algorithm to plan a path from start position to the goal.
+    fringe = PriorityQueue()
 
-    path = Improved_A_star(world_map, start_pos, goal_pos)
+    fringe.push([start_pos,[start_pos], 0], 0 + heuristic(start_pos, goal_pos))
 
-    path = simplify_path(world_map, path)
+    best_g = dict()
 
-    path= generate_smooth_trajectory(path, num_samples=200)
+    best_g[tuple(start_pos)] = 0
 
+    while not fringe.isEmpty():
+        state, path, cost = fringe.pop()
+        if state == goal_pos:
+            return path
+        # Get successors
+        for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
+            successor = [state[0]+dx, state[1]+dy]
+            if 0 <= successor[0] < 120 and 0 <= successor[1] < 120 and world_map[successor[0]][successor[1]] == 0:
+                stepCost = 1
+                new_cost = cost + stepCost
+                if tuple(successor) not in best_g or new_cost < best_g[tuple(successor)]:
+                    best_g[tuple(successor)] = new_cost
+                    f_cost = new_cost + heuristic(successor, goal_pos)
+                    fringe.push([successor, path + [successor], new_cost], f_cost)
+    
+    raise Exception("No path found")
+   
+    
     ###  END CODE HERE  ###
-    return path
+
+
+
 
 
 if __name__ == '__main__':
@@ -213,7 +134,7 @@ if __name__ == '__main__':
     start_pos = [10, 10]
 
     # Plan a path based on map from start position of the robot to the goal.
-    path = Self_driving_path_planner(map, start_pos, goal_pos)
+    path = A_star(map, start_pos, goal_pos)
 
     # Visualize the map and path.
     obstacles_x, obstacles_y = [], []

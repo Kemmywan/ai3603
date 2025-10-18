@@ -4,8 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import heapq
-import numpy as np
-from scipy.interpolate import CubicSpline
 MAP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '3-map/map.npy')
 
 
@@ -89,6 +87,9 @@ def Distance_to_Wall(world_map, position):
 def heuristic(world_map, pos, goal_pos, if_turn=0):
     return abs(pos[0] - goal_pos[0]) + abs(pos[1] - goal_pos[1]) - 3 * Distance_to_Wall(world_map, pos) + 10 * if_turn
 
+###  END CODE HERE  ###
+
+
 def Improved_A_star(world_map, start_pos, goal_pos):
     """
     Given map of the world, start position of the robot and the position of the goal, 
@@ -102,6 +103,8 @@ def Improved_A_star(world_map, start_pos, goal_pos):
     Return:
     path -- A N*2 array representing the planned path by A* algorithm.
     """
+
+    ### START CODE HERE ###
 
     fringe = PriorityQueue()
 
@@ -137,68 +140,11 @@ def Improved_A_star(world_map, start_pos, goal_pos):
     
     raise Exception("No path found")
 
-def simplify_path(world_map, path):
-    simplified_path = [path[0]]
-    current_direction = (path[1][0] - path[0][0], path[1][1] - path[0][1])
-
-    for i in range(2, len(path)):
-        prev_node = path[i - 1]
-        current_node = path[i]
-        direction = (current_node[0] - prev_node[0], current_node[1] - prev_node[1])
-
-        if direction != current_direction:
-            simplified_path.append(current_node)
-            current_direction = direction
-
-    return simplified_path
-
-def generate_smooth_trajectory(waypoints, num_samples=100):
-    waypoints = np.array(waypoints)
-    
-    # 计算累积弧长作为参数
-    distances = np.cumsum([0] + [np.linalg.norm(waypoints[i+1] - waypoints[i]) 
-                                for i in range(len(waypoints)-1)])
-    
-    # 三次样条插值
-    cs_x = CubicSpline(distances, waypoints[:, 0])
-    cs_y = CubicSpline(distances, waypoints[:, 1])
-    
-    # 等间距采样
-    s_new = np.linspace(0, distances[-1], num_samples)
-    x_smooth = cs_x(s_new)
-    y_smooth = cs_y(s_new)
-    
-    return list(zip(x_smooth, y_smooth))
-
-###  END CODE HERE  ###
-
-
-def Self_driving_path_planner(world_map, start_pos, goal_pos):
-    """
-    Given map of the world, start position of the robot and the position of the goal, 
-    plan a path from start position to the goal using A* algorithm.
-
-    Arguments:
-    world_map -- A 120*120 array indicating current map, where 0 indicating traversable and 1 indicating obstacles.
-    start_pos -- A 2D vector indicating the current position of the robot.
-    goal_pos -- A 2D vector indicating the position of the goal.
-
-    Return:
-    path -- A N*2 array representing the planned path by A* algorithm.
-    """
-
-    ### START CODE HERE ###
-
-    # A-star algorithm to plan a path from start position to the goal.
-
-    path = Improved_A_star(world_map, start_pos, goal_pos)
-
-    path = simplify_path(world_map, path)
-
-    path= generate_smooth_trajectory(path, num_samples=200)
 
     ###  END CODE HERE  ###
-    return path
+
+
+
 
 
 if __name__ == '__main__':
@@ -213,7 +159,7 @@ if __name__ == '__main__':
     start_pos = [10, 10]
 
     # Plan a path based on map from start position of the robot to the goal.
-    path = Self_driving_path_planner(map, start_pos, goal_pos)
+    path = Improved_A_star(map, start_pos, goal_pos)
 
     # Visualize the map and path.
     obstacles_x, obstacles_y = [], []
