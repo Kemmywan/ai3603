@@ -158,7 +158,7 @@ class QLearningAgent(BaseAgent):
     
     ##### END CODING HERE #####
     
-class Dyna_QAgent(object):
+class Dyna_QAgent(BaseAgent):
     ##### START CODING HERE #####
     def __init__(self, all_actions, learning_rate=0.1, discount_factor=0.9, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01, plan_steps=5):
         """initialize the agent. Maybe more function inputs are needed."""

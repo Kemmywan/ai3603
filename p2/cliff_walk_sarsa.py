@@ -8,6 +8,7 @@ from agent import SarsaAgent
 ##### START CODING HERE #####
 # This code block is optional. You can import other libraries or define your utility functions if necessary.
 
+import matplotlib.pyplot as plt
 import argparse
 
 parser = argparse.ArgumentParser(description='Choose to train or load')
@@ -40,6 +41,10 @@ if args.mode == 'load':
         raise FileNotFoundError(f"Model not found in {args.path}")
 else:
     # start training
+
+    episode_rewards = []
+    epsilons = []
+
     for episode in range(1000):
         # record the reward in an episode
         episode_reward = 0
@@ -68,60 +73,43 @@ else:
             if isdone:
                 time.sleep(0.1)
                 break
+
+        episode_rewards.append(episode_reward)
+        epsilons.append(agent.epsilon)
+
         print('episode:', episode, 'episode_reward:', episode_reward, 'epsilon:', agent.epsilon)  
     print('\ntraining over\n')   
 
     agent.save()
 
+    print("-"*60)
+    print("Plot the episode rewards")
+
+    plt.figure(figsize=(12, 5))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(episode_rewards, alpha=0.6, linewidth=0.5)
+    plt.xlabel("episode")
+    plt.ylabel("episode reward")
+    plt.title('SARSA TRAINING')
+    plt.grid(True, alpha=0.3)
+
+    plt.subplot(1, 2, 2)
+    plt.plot(epsilons, alpha=0.6, linewidth=0.5)
+    plt.xlabel("episode")
+    plt.ylabel("epsilons")
+    plt.title('SARSA TRAINING')
+    plt.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+
+    plt.savefig('./plots/sarsa_train.png')
+
+    plt.show()
+
+    print("Plot saved to ./plots/sarsa_train.png")
+
 agent.gogogo()
-
-# state = env.reset()
-
-# env.render()
-
-# action = np.argmax(agent.q_table[state])
-
-# print(agent.q_table[13])
-
-# ---------------------------------------------------------
-
-# state = env.reset()
-
-# env.render()
-
-# path = [state]
-# total_reward = 0
-
-# for step in range(100):
-
-#     sorted_actions = np.argsort(agent.q_table[state])[::-1]
-
-#     for action in sorted_actions:
-#         print(action)
-#         print(path)
-#         sim_state = state + (-12 if action == 0 else 0) + (1 if action == 1 else 0) + (12 if action == 2 else 0) + (-1 if action == 3 else 0) 
-#         if sim_state in path or sim_state < 0 or sim_state > 36 and sim_state < 47:
-#             continue
-#         else:
-#             break
-        
-#     next_state, reward, isdone, info = env.step(action)
-
-#     env.render()
-
-#     time.sleep(0.5)
-
-#     total_reward += reward
-
-#     path.append(next_state)
-
-#     print(f"--> go to ({next_state // 12},{next_state % 12}) with {reward} added into total reward: {total_reward}")
-
-#     if isdone:
-#         print("Arrive!")
-#         break
-
-#     state = next_state
 
 # close the render window after training.
 env.close()

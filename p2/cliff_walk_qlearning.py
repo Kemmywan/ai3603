@@ -8,6 +8,7 @@ from agent import QLearningAgent
 ##### START CODING HERE #####
 # This code block is optional. You can import other libraries or define your utility functions if necessary.
 import argparse
+import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser(description='Choose to train or load')
 parser.add_argument('--mode', type=str, default='new', choices=['new', 'load'])
@@ -52,6 +53,10 @@ if args.mode == 'load':
         raise FileNotFoundError(f"Model not found in {args.path}")
 else:
     # start training
+
+    episode_rewards = []
+    epsilons = []
+
     for episode in range(1000):
         # record the reward in an episode
         episode_reward = 0
@@ -77,11 +82,41 @@ else:
             if isdone:
                 time.sleep(0.1)
                 break
-            
+
+        episode_rewards.append(episode_reward)
+        epsilons.append(agent.epsilon)
+
         print('episode:', episode, 'episode_reward:', episode_reward, 'epsilon:', agent.epsilon)  
     print('\ntraining over\n')   
 
     agent.save()
+
+    print("-"*60)
+    print("Plot the episode rewards")
+
+    plt.figure(figsize=(12, 5))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(episode_rewards, alpha=0.6, linewidth=0.5)
+    plt.xlabel("episode")
+    plt.ylabel("episode reward")
+    plt.title('QLEARNING TRAINING')
+    plt.grid(True, alpha=0.3)
+
+    plt.subplot(1, 2, 2)
+    plt.plot(epsilons, alpha=0.6, linewidth=0.5)
+    plt.xlabel("episode")
+    plt.ylabel("epsilons")
+    plt.title('QLEARNING TRAINING')
+    plt.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+
+    plt.savefig('./plots/qlearning_train.png')
+
+    plt.show()
+
+    print("Plot saved to ./plots/qlearning_train.png")
 
 agent.gogogo()
 
