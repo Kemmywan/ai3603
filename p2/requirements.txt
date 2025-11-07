@@ -2,3 +2,4 @@ gym==0.25.2
 gym[box2d]
 stable-baselines3==1.2.0
 tensorboard
+imageio-ffmpeg
