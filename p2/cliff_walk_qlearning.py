@@ -118,7 +118,7 @@ else:
 
     print("Plot saved to ./plots/qlearning_train.png")
 
-agent.gogogo()
+agent.gogogo("qlearning")
 
 # close the render window after training.
 env.close()

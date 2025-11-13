@@ -120,7 +120,7 @@ else:
     print("Plot saved to ./plots/dynaq_train.png")
 
 
-agent.gogogo()
+agent.gogogo("dynaq")
 
 # close the render window after training.
 env.close()

@@ -56,24 +56,24 @@ class BaseAgent(object):
         self.epsilon_decay = data['epsilon_decay']
         self.epsilon_min = data['epsilon_min']
 
-    def gogogo(self):
-        "render the route onboard according to the q_table"
+    def gogogo(self, name):
+        "render the route onboard according to the q_table and record video"
+        video_dir = './videos'
+        os.makedirs(video_dir, exist_ok=True)
         env = gym.make("CliffWalking-v0")
-        
+
+        env = gym.wrappers.RecordVideo(env, video_folder=video_dir, name_prefix=name, episode_trigger=lambda x: True)
+
         RANDOM_SEED = 0
         env.seed(RANDOM_SEED)
 
         state = env.reset()
-
         env.render()
-
         path = [state]
         total_reward = 0
 
         for step in range(100):
-
             sorted_actions = np.argsort(self.q_table[state])[::-1]
-
             # Make a valid and q-smallest action
             for action in sorted_actions:
                 print(action)
@@ -83,27 +83,17 @@ class BaseAgent(object):
                     continue
                 else:
                     break
-                
             next_state, reward, isdone, info = env.step(action)
-
             env.render()
-
             time.sleep(0.5)
-
             total_reward += reward
-
             path.append(next_state)
-
             print(f"--> go to ({next_state // 12},{next_state % 12}) with {reward} added into total reward: {total_reward}")
-
             if isdone:
                 print("Arrive!")
                 break
-
             state = next_state
-        
         env.close()
-
         return None
 
 class SarsaAgent(BaseAgent):
@@ -155,7 +145,29 @@ class QLearningAgent(BaseAgent):
         
         if isdone and self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
-    
+    def save(self, filepath="./models/qlearning_agent.pkl"):
+        data = {
+            'q_table': self.q_table,
+            'epsilon': self.epsilon,
+            'lr': self.lr,
+            'gamma': self.gamma,
+            'epsilon_decay': self.epsilon_decay,
+            'epsilon_min': self.epsilon_min
+        }
+
+        with open(filepath, 'wb') as f:
+            pickle.dump(data, f)
+
+    def load(self, filepath):
+        with open(filepath, 'rb') as f:
+            data = pickle.load(f)
+        
+        self.q_table = data['q_table']
+        self.epsilon = data['epsilon']
+        self.lr = data['lr']
+        self.gamma = data['gamma']
+        self.epsilon_decay = data['epsilon_decay']
+        self.epsilon_min = data['epsilon_min']
     ##### END CODING HERE #####
     
 class Dyna_QAgent(BaseAgent):

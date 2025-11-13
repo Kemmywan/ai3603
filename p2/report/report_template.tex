@@ -1,0 +1,92 @@
+% Report Template report_template.tex
+\documentclass[12pt,a4paper]{article}
+
+% Page settings
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{titling}
+\usepackage{float}
+\usepackage[labelfont=bf]{caption}
+
+% Title styles
+\titleformat{\section}{\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries\color{teal}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{purple}}{\thesubsubsection}{1em}{}
+
+% Main text style
+\renewcommand{\baselinestretch}{1.5}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.5em}
+
+% Code block style
+\lstset{
+  backgroundcolor=\color{gray!10},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},
+  commentstyle=\color{green!60!black},
+  stringstyle=\color{orange},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  frame=single,
+  breaklines=true,
+  tabsize=4,
+  showstringspaces=false
+}
+
+% Figure style
+\setlength{\abovecaptionskip}{6pt}
+\setlength{\belowcaptionskip}{6pt}
+\renewcommand{\figurename}{Figure}
+
+% Cover page style
+\pretitle{\begin{center}\vspace*{4cm}\Huge\bfseries}
+\posttitle{\par\vspace{2cm}\end{center}}
+\preauthor{\begin{center}\large}
+\postauthor{\end{center}}
+\predate{\begin{center}\large}
+\postdate{\end{center}}
+
+% Document starts
+\begin{document}
+
+% Cover page
+\title{Sample Report Title}
+\author{Your Name}
+\date{November 13, 2025}
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% Table of contents
+\tableofcontents
+\newpage
+
+% Example content
+\section{Section Level 1}
+This is the main text, demonstrating paragraph style.
+
+\subsection{Section Level 2}
+Main text here.
+
+\subsubsection{Section Level 3}
+Main text here.
+
+\section{Code Example}
+\begin{lstlisting}[language=Python,caption={Python Code Example}]
+def hello():
+    print("Hello, world!")
+\end{lstlisting}
+
+\section{Figure Example}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{example-image}
+    \caption{Example Figure}
+\end{figure}
+
+\end{document}

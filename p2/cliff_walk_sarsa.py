@@ -109,10 +109,12 @@ else:
 
     print("Plot saved to ./plots/sarsa_train.png")
 
-agent.gogogo()
+agent.gogogo("sarsa")
 
 # close the render window after training.
 env.close()
+
+
 
 ####### END CODING HERE #######
 
