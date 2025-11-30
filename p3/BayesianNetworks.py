@@ -36,6 +36,7 @@ def readFactorTable(varnames, probs, outcomesList):
 ## data: data frame read using pandas read_csv
 ## varnames: specify what variables you want to read from the table
 ## factorTable is in the type of pandas dataframe
+## PS: The first var in varnames will be presented as the value before the conditinal "|"
 def readFactorTablefromData(data, varnames):
     numVars = len(varnames)
     outcomesList = []
@@ -125,7 +126,7 @@ def joinFactors(Factor1, Factor2):
 def marginalizeFactor(factorTable, hiddenVar):
     # your code
 
-    mar_col = [col for col in factorTable.columns if col != hiddenVar and col != "probs" ]
+    mar_col = [col for col in factorTable.columns if col not in hiddenVar and col != "probs" ]
 
     marginalized = factorTable.groupby(mar_col, as_index=False)['probs'].sum()
 
@@ -192,7 +193,7 @@ def inference(bayesnet, hiddenVars, evidenceVars, evidenceVals):
 
         inf_tab = joinFactors(inf_tab, df)
     
-    inf_tab = marginalizeFactor(inf_tab, hiddenVars)
+    inf_tab = marginalizeFactor(inf_tab, hiddenVars + evidenceVars)
 
     inf_tab["probs"] = inf_tab["probs"] / inf_tab["probs"].sum()
 

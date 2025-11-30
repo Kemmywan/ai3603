@@ -1,0 +1,214 @@
+% Report Template report_template.tex
+\documentclass[12pt,a4paper]{article}
+% Page settings
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{titling}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage[labelfont=bf]{caption}
+
+% Title styles
+\titleformat{\section}{\Large\bfseries\color{blue}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries\color{teal}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{purple}}{\thesubsubsection}{1em}{}
+
+% Main text style
+\renewcommand{\baselinestretch}{1.5}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.5em}
+
+% Code block style
+\lstset{
+  backgroundcolor=\color{gray!10},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},
+  commentstyle=\color{green!60!black},
+  stringstyle=\color{orange},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  frame=single,
+  breaklines=true,
+  tabsize=4,
+  showstringspaces=false
+}
+
+% Figure style
+\setlength{\abovecaptionskip}{6pt}
+\setlength{\belowcaptionskip}{6pt}
+\renewcommand{\figurename}{Figure}
+
+% Cover page style
+\pretitle{\begin{center}\vspace*{4cm}\Huge\bfseries}
+\posttitle{\par\vspace{2cm}\end{center}}
+\preauthor{\begin{center}\large}
+\postauthor{\end{center}}
+\predate{\begin{center}\large}
+\postdate{\end{center}}
+
+% Document starts
+\begin{document}
+
+% Cover page
+\title{Report for AI3603: Homework III}
+\author{Chen Jingtao}
+\date{November 30th, 2025}
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% Table of contents
+\tableofcontents
+\newpage
+
+\section{Code Implementation of BayesianNetworks}
+
+Fill in the blank at \textit{BayesianNetworks.py}, complete the functool that is needed for analyzing data using bayesian network.
+
+\noindent In \textit{jointFactors()}, we consider two kinds of conditions. When two factors have no common columns, we consider the "cross" method in merge(); and when they have common columns, we treat the joint as a conditional inference.
+
+\noindent In \textit{marginalizeFactor()}, we use groupby().sum() method to merge those with same not-hiddenvar-columns.
+
+\noindent In \textit{evidenceUpdateNet()}, for each factor inside the net, we select the row that suit the evidence.
+
+\noindent In \textit{inference()}, we firstly use \textit{evidenceUpdateNet()} to select out the evident rows, and then do \textit{jointFactors()} among all factors, finally do \textit{marginalizeFactor()} to conclude the probs we get.
+
+%--------
+
+\section{Written Part}
+
+In this section we analyze the given RiskFactorsData.
+
+\noindent The detail implementation is written in \textit{Risk\_analyze.ipynb}.xw
+
+\subsection{Problem 1}
+
+The size of the bayes net is 1048.
+
+\subsection{Problem 2}
+
+\sloppy{(a)If you have bad habits, the probabilities that you have each health problem is as follows:}
+
+\noindent- diabetes: 0.1796845567127721
+
+\noindent- stroke: 0.053783054506654104
+
+\noindent- attack: 0.08560619240891772
+
+\noindent- angina: 0.0950935453205552
+
+
+\noindent If you have good habits, the probabilities that you have each health problem is as follows:
+
+\noindent- diabetes: 0.07440604734997436
+
+\noindent- stroke: 0.02939015003013203
+
+\noindent- attack: 0.036246688444733055
+
+\noindent- angina: 0.03480791596138738
+
+\noindent (b)If you have bad health, the probabilities that you have each health problem is as follows:
+
+\noindent- diabetes: 0.11442040761053557
+
+\noindent- stroke: 0.08373575429785589
+
+\noindent- attack: 0.14107269332303135
+
+\noindent- angina: 0.1610649668405125
+
+\noindent If you have good health, the probabilities that you have each health problem is as follows:
+
+\noindent- diabetes: 0.056980800262824795
+
+\noindent- stroke: 0.014633237021157612
+
+\noindent- attack: 0.015994034858793926
+
+\noindent- angina: 0.013123310653369375
+
+\subsection{Problem 3}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./p3.png}
+    \caption{Pronlem 3}
+\end{figure}
+
+\noindent From the plot, I can tell two facts:
+
+\noindent (1) With higher income level, probabilities of all four kinds of diseases go down, so better income may contribute to less disease.
+
+\noindent (2) Over the four kinds of diseases among all levels of income, diabetes occur the most frequently, whilc stroke occur the less frequently.
+
+\subsection{Problem 4}
+
+\noindent (a)If you have bad habits, the probabilities that you have each health problem is as follows:
+
+\noindent- diabetes: 0.2466907421997436
+
+\noindent- stroke: 0.08088181221862281
+
+\noindent- attack: 0.13563231125420805
+
+\noindent- angina: 0.13804114406095389
+
+\noindent If you have good habits, the probabilities that you have each health problem is as follows:
+
+\noindent- diabetes: 0.05576155616484895
+
+\noindent- stroke: 0.019589809785240563
+
+\noindent- attack: 0.021058123344538895
+
+\noindent- angina: 0.023596047799734423
+
+\noindent (b)If you have bad health, the probabilities that you have each health problem is as follows:
+
+\noindent- diabetes: 0.12013390316425754
+
+\noindent- stroke: 0.08374005218091235
+
+\noindent- attack: 0.140240442199526
+
+\noindent- angina: 0.16041693839228313
+
+\noindent If you have good health, the probabilities that you have each health problem is as follows:
+
+\noindent- diabetes: 0.05517615493861087
+
+\noindent- stroke: 0.014719065353818117
+
+\noindent- attack: 0.016014050599026382
+
+\noindent- angina: 0.013126217424413758 
+
+\noindent The effect: we can see in (b) it have not many change, but in (a) we can see the probs go bigger for bad-habits state and go smaller for good-habits, which means the affect on health outcome from habits becomes bigger.
+
+\noindent It's valid, since given the state of either habits or health, we may find that still four kinds of health outcome is conditionally independent. By the result we can also see that the probs-trend is similar to what we get in question(2).
+
+\subsection{Problem 5}
+
+\noindent In the q-4-net, we get 
+\begin{align}
+P(stroke=1|diabetes=1)=0.04486338128501227 \\
+P(stroke=1|diabetes=3)=0.04032301820310427
+\end{align}
+
+\noindent In the q-5-net, we get 
+\begin{align}
+P(stroke=1|diabetes=1)=0.0774910969238895 \\
+P(stroke=1|diabetes=3)=0.03483211249742304
+\end{align}
+
+\noindent The effect: the first prob go bigger and the second one go smaller. In another words, if one has diabetes, he/she is more possible to have stroke; and if one hasn't, he/she is also less possible to have stroke.
+
+\noindent This is not valid, since the health outcome become dependent over probabilities.
+
+\end{document}
